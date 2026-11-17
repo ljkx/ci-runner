@@ -17,6 +17,10 @@ on:
       label:
         description: "Unique label for this run (shown as the run name)"
         required: true
+      fonts_ref:
+        description: "storytold/craft-fonts commit to build with (CRAFT_FONTS_DIR), as upstream CI does; empty for none"
+        required: false
+        default: "bfcbf714e45a3ea8e98f88ab2b7971372a576414"
       apt:
         description: "Extra apt packages"
         required: false
@@ -53,6 +57,15 @@ jobs:
             git -C "$GITHUB_WORKSPACE/craft-i18n" checkout -q "$rev"
             echo "CRAFT_I18N_DIR=$GITHUB_WORKSPACE/craft-i18n" >> "$GITHUB_ENV"
           fi
+
+      - name: Check out craft-fonts
+        if: inputs.fonts_ref != ''
+        env:
+          REF: ${{ inputs.fonts_ref }}
+        run: |
+          git clone -q --filter=blob:none https://github.com/storytold/craft-fonts "$GITHUB_WORKSPACE/craft-fonts"
+          git -C "$GITHUB_WORKSPACE/craft-fonts" checkout -q "$REF"
+          echo "CRAFT_FONTS_DIR=$GITHUB_WORKSPACE/craft-fonts" >> "$GITHUB_ENV"
 
       - name: Install apt packages
         if: inputs.apt != ''
